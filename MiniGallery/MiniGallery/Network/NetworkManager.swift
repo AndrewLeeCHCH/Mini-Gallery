@@ -82,14 +82,14 @@ final class NetworkManager {
     }
   }
   
-  func getVideoURLFrom(_ videoUrlString: String, completionHandler: ((URL) -> Void)?) {
+  func getVideoURLFrom(_ videoUrlString: String, completionHandler: @escaping ((URL) -> Void)) {
     var noValue = true
     
     let localVideoPath = "Resource/\(videoUrlString.split(separator: "/")[3]).mp4"
     do {
       let localVideoURL = try generateLocalVideoURL(localVideoPath: localVideoPath)
       noValue = false
-      completionHandler?(localVideoURL)
+      completionHandler(localVideoURL)
     } catch {
       print(error.localizedDescription)
     }
@@ -105,14 +105,50 @@ final class NetworkManager {
           if noValue {
             let localVideoURL = try self.generateLocalVideoURL(localVideoPath: localVideoPath)
             noValue = false
-            completionHandler?(localVideoURL)
+            completionHandler(localVideoURL)
           }
         } catch {
           print(error.localizedDescription)
         }
         
         if noValue {
-          completionHandler?(URL(string: videoUrlString)!)
+          completionHandler(URL(string: videoUrlString)!)
+        }
+      }
+    }
+  }
+  
+  func getUIImageFrom(_ imageUrlString: String, completionHandler: @escaping((UIImage) -> Void)) {
+    var noValue = true
+    let localImagePath = "Resource/\(imageUrlString.split(separator: "/")[4]).jpg"
+    
+    do {
+      let image = try Disk.retrieve(localImagePath, from: .documents, as: UIImage.self)
+      noValue = false
+      completionHandler(image)
+    } catch {
+      print(error.localizedDescription)
+    }
+    
+    getDataFrom(urlString: imageUrlString) { data, err in
+      guard err == nil else {
+        print(err!.localizedDescription)
+        return
+      }
+      
+      if let data = data, let image = UIImage(data: data) {
+        do {
+          try Disk.save(image, to: .documents, as: localImagePath)
+        } catch {
+          print(error.localizedDescription)
+        }
+        if noValue {
+          completionHandler(image)
+        }
+      } else {
+        print("Error generate image with data")
+        if noValue {
+          completionHandler(#imageLiteral(resourceName: "imageBroken"))
         }
       }
     }

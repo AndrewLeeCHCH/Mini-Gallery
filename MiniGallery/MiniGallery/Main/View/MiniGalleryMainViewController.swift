@@ -20,6 +20,7 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
       switch event {
       case .postsDataFetched(let posts):
         videoCollectionView.updateData(data: posts)
+        imageCollectionView.updateData(data: posts)
         break
       default:
         break
@@ -30,6 +31,7 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
   // MARK: - Variables
   
   private var videoCollectionView: UICollectionView & CollectionView = VideoCollectionView()
+  private var imageCollectionView: UICollectionView & CollectionView = ImageCollectionView()
   
   // MARK: - View Lifecycle
 
@@ -38,16 +40,33 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
     
     presenter.getPostInformation(urlString: "http://private-04a55-videoplayer1.apiary-mock.com/pictures")
     
-    [videoCollectionView].forEach {
+    [videoCollectionView, imageCollectionView].forEach {
       view.addSubview($0)
     }
     videoCollectionView.anchor(top: view.safeAreaLayoutGuide.topAnchor, left: view.leftAnchor, bottom: nil, right: view.rightAnchor, paddingTop: 0, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: UIScreen.main.bounds.width)
+    imageCollectionView.anchor(top: nil, left: view.leftAnchor, bottom: view.safeAreaLayoutGuide.bottomAnchor, right: view.rightAnchor, paddingTop: 0, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: 120)
+    
+    imageCollectionView.eventDelegate = self
+    videoCollectionView.eventDelegate = self
+  }
+  
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    NotificationCenter.default.addObserver(self,
+                                           selector: #selector(didReceiveOrientationChangeNotification),
+                                           name: .UIDeviceOrientationDidChange,
+                                           object: nil)
   }
   
   override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
     super.viewWillTransition(to: size, with: coordinator)
+    
+    videoCollectionView.prepareForOrientationChange()
+    imageCollectionView.prepareForOrientationChange()
+  }
 
-    videoCollectionView.rescrollForOrientationChange()
+  deinit {
+    NotificationCenter.default.removeObserver(self)
   }
   
   // MARK: - Layout
@@ -60,5 +79,25 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
   
   // MARK: - Notifications
   
+  @objc private func didReceiveOrientationChangeNotification(_ notification: Notification) {
+    videoCollectionView.rescrollForOrientationChange()
+    imageCollectionView.rescrollForOrientationChange()
+  }
+  
   // MARK: - Helpers
+}
+
+extension MiniGalleryMainViewController: CollectionViewEventDelegate {
+  func didScrollTo(index: Int) {
+    videoCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
+                                     at: .centeredHorizontally,
+                                     animated: true)
+    imageCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
+                                     at: .centeredHorizontally,
+                                     animated: true)
+  }
+  
+  func didScrollPercentage(percent: CGFloat) {
+//    videoCollectionView.contentOffset.x = percent * UIScreen.main.bounds.width
+  }
 }

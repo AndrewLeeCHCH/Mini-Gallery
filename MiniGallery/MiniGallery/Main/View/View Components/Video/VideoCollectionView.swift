@@ -8,14 +8,23 @@
 
 import UIKit
 
+protocol CollectionViewEventDelegate: class {
+  func didScrollTo(index: Int)
+  func didScrollPercentage(percent: CGFloat)
+}
+
 protocol CollectionView {
+  var eventDelegate: CollectionViewEventDelegate? { get set }
   func updateData<T>(data: [T])
+  func prepareForOrientationChange()
   func rescrollForOrientationChange()
 }
 
 final class VideoCollectionView: UICollectionView, CollectionView {
   
   // MARK: -Variables
+  
+  weak var eventDelegate: CollectionViewEventDelegate?
   
   let cellId = "cellId"
   
@@ -26,6 +35,8 @@ final class VideoCollectionView: UICollectionView, CollectionView {
       }
     }
   }
+  
+  private var indexPathBeforeChangingOrientation: IndexPath?
   
   // MARK: -Initialization
   
@@ -49,19 +60,28 @@ final class VideoCollectionView: UICollectionView, CollectionView {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func rescrollForOrientationChange() {
-    var index = Int(floor(contentOffset.x / UIScreen.main.bounds.width))
-    index = index < 0 ? 0 : index >= self.posts.count ? self.posts.count - 1 : index
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-      self.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: false)
-    })
-  }
-  
   func updateData<T>(data: [T]) {
     guard let posts = data as? [Post] else {
       return
     }
     self.posts = posts
+  }
+  
+  func prepareForOrientationChange() {
+    var index = Int(floor(contentOffset.x / UIScreen.main.bounds.width))
+    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
+    
+    indexPathBeforeChangingOrientation = IndexPath(item: index, section: 0)
+  }
+  
+  func rescrollForOrientationChange() {
+    guard let indexPathBeforeChangingOrientation = indexPathBeforeChangingOrientation else {
+      return
+    }
+    DispatchQueue.main.async {
+      self.reloadItems(at: [indexPathBeforeChangingOrientation])
+      self.scrollToItem(at: indexPathBeforeChangingOrientation, at: .centeredHorizontally, animated: false)
+    }
   }
 }
 
@@ -124,6 +144,13 @@ extension VideoCollectionView: UIScrollViewDelegate {
         cell.startPlaying()
       }
     }
+    eventDelegate?.didScrollTo(index: calculateCurrentIndex())
+  }
+  
+  private func calculateCurrentIndex() -> Int {
+    var index = Int(floor(contentOffset.x / UIScreen.main.bounds.width))
+    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
+    return index
   }
 }
 

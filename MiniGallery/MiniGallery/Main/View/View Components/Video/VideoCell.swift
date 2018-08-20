@@ -41,6 +41,10 @@ final class VideoCell: UICollectionViewCell {
                                            selector: #selector(playerItemDidReachEnd(notification:)),
                                            name: Notification.Name.AVPlayerItemDidPlayToEndTime,
                                            object: player?.currentItem)
+    NotificationCenter.default.addObserver(self,
+                                           selector: #selector(didReceiveOrientationChangeNotification(notification:)),
+                                           name: .UIDeviceOrientationDidChange,
+                                           object: nil)
   }
   
   required init?(coder aDecoder: NSCoder) {
@@ -50,23 +54,23 @@ final class VideoCell: UICollectionViewCell {
   override func layoutSubviews() {
     super.layoutSubviews()
     
-    if UIDevice.current.orientation.isLandscape {
-      playerLayer?.frame = CGRect(x: bounds.width / 2 - 50, y: 20, width: 100, height: 100)
-    } else {
-      playerLayer?.frame = bounds
-    }
+    changePlayerLayerFrame()
   }
   
   deinit {
     NotificationCenter.default.removeObserver(self)
   }
   
-  @objc func playerItemDidReachEnd(notification: Notification) {
+  @objc private func playerItemDidReachEnd(notification: Notification) {
     if let item = notification.object as? AVPlayerItem,
       let currentItem = player?.currentItem,
       item == currentItem {
       item.seek(to: kCMTimeZero, completionHandler: nil)
     }
+  }
+  
+  @objc private func didReceiveOrientationChangeNotification(notification: Notification) {
+//    changePlayerLayerFrame()
   }
   
   func stopPlaying() {
@@ -75,5 +79,13 @@ final class VideoCell: UICollectionViewCell {
   
   func startPlaying() {
     player?.play()
+  }
+  
+  private func changePlayerLayerFrame() {
+    if UIDevice.current.orientation.isLandscape {
+      playerLayer?.frame = CGRect(x: bounds.width / 2 - 50, y: 20, width: 100, height: 100)
+    } else {
+      playerLayer?.frame = bounds
+    }
   }
 }
