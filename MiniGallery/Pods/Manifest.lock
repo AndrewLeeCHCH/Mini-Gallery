@@ -1,0 +1,16 @@
+PODS:
+  - Disk (0.3.3)
+
+DEPENDENCIES:
+  - Disk
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Disk
+
+SPEC CHECKSUMS:
+  Disk: d1f55cd61f6ca20f368232d0c6e37e3c3dfcb63e
+
+PODFILE CHECKSUM: 1387807350c69647248ffc0b20b9b6618de4bceb
+
+COCOAPODS: 1.5.0
