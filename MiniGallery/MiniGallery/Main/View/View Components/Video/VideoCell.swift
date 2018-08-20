@@ -34,7 +34,7 @@ final class VideoCell: UICollectionViewCell {
     player?.actionAtItemEnd = .none
     
     playerLayer = AVPlayerLayer(player: player)
-    playerLayer?.videoGravity = .resize
+    playerLayer?.videoGravity = .resizeAspectFill
     
     layer.insertSublayer(playerLayer!, at: 0)
     NotificationCenter.default.addObserver(self,
@@ -51,7 +51,7 @@ final class VideoCell: UICollectionViewCell {
     super.layoutSubviews()
     
     if UIDevice.current.orientation.isLandscape {
-      playerLayer?.frame = CGRect(x: UIScreen.main.bounds.width / 2 - 50, y: 20, width: 50, height: 50)
+      playerLayer?.frame = CGRect(x: bounds.width / 2 - 50, y: 20, width: 100, height: 100)
     } else {
       playerLayer?.frame = bounds
     }
