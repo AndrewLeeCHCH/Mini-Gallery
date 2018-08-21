@@ -30,8 +30,14 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
   
   // MARK: - Variables
   
-  private var videoCollectionView: UICollectionView & CollectionView = VideoCollectionView()
-  private var imageCollectionView: UICollectionView & CollectionView = ImageCollectionView()
+  private var videoCollectionView: UICollectionView & MGCollectionView = VideoCollectionView()
+  private var imageCollectionView: UICollectionView & MGCollectionView = ImageCollectionView()
+  
+  // MARK: - Lifecyle
+  
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
   
   // MARK: - View Lifecycle
 
@@ -65,39 +71,32 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
     imageCollectionView.prepareForOrientationChange()
   }
 
-  deinit {
-    NotificationCenter.default.removeObserver(self)
-  }
-  
-  // MARK: - Layout
-  
-  // MARK: - UI Interaction
-  
-  // MARK: - User Interaction
-  
-  // MARK: - Controller Logic
-  
   // MARK: - Notifications
   
   @objc private func didReceiveOrientationChangeNotification(_ notification: Notification) {
-    videoCollectionView.rescrollForOrientationChange()
-    imageCollectionView.rescrollForOrientationChange()
+    if UIDevice.current.orientation.isLandscape || UIDevice.current.orientation.isPortrait {
+      videoCollectionView.rescrollForOrientationChange()
+      imageCollectionView.rescrollForOrientationChange()
+    }
   }
   
   // MARK: - Helpers
 }
 
-extension MiniGalleryMainViewController: CollectionViewEventDelegate {
-  func didScrollTo(index: Int) {
-    videoCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
-                                     at: .centeredHorizontally,
-                                     animated: true)
-    imageCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
-                                     at: .centeredHorizontally,
-                                     animated: true)
+extension MiniGalleryMainViewController: MGCollectionViewDelegate {
+  func collectionView(_ view: UICollectionView & MGCollectionView, didScrollTo index: Int) {
+    if view == imageCollectionView {
+      videoCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
+                                       at: .centeredHorizontally,
+                                       animated: true)
+    } else if view == videoCollectionView {
+      imageCollectionView.scrollToItem(at: IndexPath(item: index, section: 0),
+                                       at: .centeredHorizontally,
+                                       animated: true)
+    }
   }
   
-  func didScrollPercentage(percent: CGFloat) {
-//    videoCollectionView.contentOffset.x = percent * UIScreen.main.bounds.width
+  func collectionView(_ view: UICollectionView & MGCollectionView, isScrollingTo index: CGFloat) {
+
   }
 }

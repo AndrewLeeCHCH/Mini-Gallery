@@ -11,6 +11,8 @@ import AVFoundation
 
 final class VideoCell: UICollectionViewCell {
   
+  // MARK: -Variables
+  
   var videoUrlString: String = "" {
     didSet {
       NetworkManager.shared.getVideoURLFrom(videoUrlString) { url in
@@ -27,6 +29,8 @@ final class VideoCell: UICollectionViewCell {
   var player: AVPlayer?
   var playerLayer: AVPlayerLayer?
   
+  // MARK: -Lifecycle
+  
   override init(frame: CGRect) {
     super.init(frame: frame)
     
@@ -41,10 +45,6 @@ final class VideoCell: UICollectionViewCell {
                                            selector: #selector(playerItemDidReachEnd(notification:)),
                                            name: Notification.Name.AVPlayerItemDidPlayToEndTime,
                                            object: player?.currentItem)
-    NotificationCenter.default.addObserver(self,
-                                           selector: #selector(didReceiveOrientationChangeNotification(notification:)),
-                                           name: .UIDeviceOrientationDidChange,
-                                           object: nil)
   }
   
   required init?(coder aDecoder: NSCoder) {
@@ -61,18 +61,14 @@ final class VideoCell: UICollectionViewCell {
     NotificationCenter.default.removeObserver(self)
   }
   
+  // MARK: -Listeners
+  
   @objc private func playerItemDidReachEnd(notification: Notification) {
-    if let item = notification.object as? AVPlayerItem,
-      let currentItem = player?.currentItem,
-      item == currentItem {
+    if let item = notification.object as? AVPlayerItem {
       item.seek(to: kCMTimeZero, completionHandler: nil)
     }
   }
-  
-  @objc private func didReceiveOrientationChangeNotification(notification: Notification) {
-//    changePlayerLayerFrame()
-  }
-  
+
   func stopPlaying() {
     player?.pause()
   }
@@ -81,10 +77,12 @@ final class VideoCell: UICollectionViewCell {
     player?.play()
   }
   
+  // MARK: -Helper
+  
   private func changePlayerLayerFrame() {
     if UIDevice.current.orientation.isLandscape {
-      playerLayer?.frame = CGRect(x: bounds.width / 2 - 50, y: 20, width: 100, height: 100)
-    } else {
+      playerLayer?.frame = CGRect(x: bounds.midX - 50, y: 20, width: 100, height: 100)
+    } else if UIDevice.current.orientation.isPortrait {
       playerLayer?.frame = bounds
     }
   }

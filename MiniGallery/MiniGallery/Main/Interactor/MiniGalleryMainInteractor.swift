@@ -17,6 +17,4 @@ extension MiniGalleryMainInteractor: MiniGalleryMainUseCase {
       self.output?.didReceivePostInformation(posts: posts)
     }
   }
-  
-  // TODO: Implement use case methods
 }

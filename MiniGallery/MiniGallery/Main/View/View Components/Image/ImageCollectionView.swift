@@ -8,18 +8,20 @@
 
 import UIKit
 
-final class ImageCollectionView: UICollectionView, CollectionView {
-  
-  // MARK: - Constants
+final class ImageCollectionView: UICollectionView, MGCollectionView {
   
   // MARK: - Variables
   
-  weak var eventDelegate: CollectionViewEventDelegate?
+  weak var eventDelegate: MGCollectionViewDelegate?
   
   private var posts: [Post] = [] {
     didSet {
       DispatchQueue.main.async {
         self.reloadData()
+        guard self.posts.count > 0 else {
+          return
+        }
+        self.zoomInZoomOutAnimation(0)
       }
     }
   }
@@ -27,8 +29,6 @@ final class ImageCollectionView: UICollectionView, CollectionView {
   private let cellId = "cellId"
   
   private var indexPathBeforeChangingOrientation: IndexPath?
-
-  // MARK: - View Components
 
   // MARK: - Lifecycle
   
@@ -41,6 +41,7 @@ final class ImageCollectionView: UICollectionView, CollectionView {
     delegate = self
     dataSource = self
     register(ImageCell.self, forCellWithReuseIdentifier: cellId)
+    
     backgroundColor = .white
     showsHorizontalScrollIndicator = false
   }
@@ -48,20 +49,8 @@ final class ImageCollectionView: UICollectionView, CollectionView {
   required init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
-  
-  // MARK: - View Lifecycle
 
-  // MARK: - View Value Assignments
-  
-  // MARK: - Layout
-
-  // MARK: - UI Interaction
-
-  // MARK: - User Interaction
-
-  // MARK: - Controller Logic
-
-  // MARK: - Listeners
+  // MARK: - MGCollectionView functions
   
   func updateData<T>(data: [T]) {
     guard let posts = data as? [Post] else {
@@ -84,13 +73,52 @@ final class ImageCollectionView: UICollectionView, CollectionView {
     DispatchQueue.main.async {
       self.reloadItems(at: [indexPathBeforeChangingOrientation])
       self.scrollToItem(at: indexPathBeforeChangingOrientation, at: .centeredHorizontally, animated: false)
+    }
+    
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
       self.zoomInZoomOutAnimation(indexPathBeforeChangingOrientation.item)
       self.indexPathBeforeChangingOrientation = nil
-    }
+    })
   }
  
-  // MARK: - Helpers
-
+  // MARK: - View Animation
+  
+  private func zoomInZoomOutAnimation(_ item: Int) {
+    var animations: (() -> Void)?
+    
+    if let cell = cellForItem(at: IndexPath(item: item, section: 0)) {
+      animations = {
+        cell.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        self.visibleCells.filter { visibleCell in
+          visibleCell != cell
+          }.map {
+            $0.transform = .identity
+          }
+      }
+    } else {
+      if posts.count > 0 && item < posts.count {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+          self.zoomInZoomOutAnimation(item)
+        })
+      }
+    }
+    
+    if let animations = animations {
+      UIView.animateKeyframes(withDuration: 0.1,
+                              delay: 0,
+                              options: .calculationModeCubic,
+                              animations: animations,
+                              completion: nil)
+    }
+  }
+  
+  // MARK: - Helper
+  
+  private func calculateCurrentIndex() -> Int {
+    var index = Int(floor(contentOffset.x * 3 / UIScreen.main.bounds.width))
+    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
+    return index
+  }
 }
 
 // MARK: - Delegate
@@ -128,43 +156,12 @@ extension ImageCollectionView: UICollectionViewDelegateFlowLayout {
   func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
     let index = calculateCurrentIndex()
     zoomInZoomOutAnimation(index)
-    eventDelegate?.didScrollTo(index: index)
+    eventDelegate?.collectionView(self, didScrollTo: index)
   }
   
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
-    eventDelegate?.didScrollPercentage(percent: contentOffset.x * 3 / UIScreen.main.bounds.width)
+    eventDelegate?.collectionView(self, isScrollingTo: contentOffset.x * 3 / UIScreen.main.bounds.width)
     zoomInZoomOutAnimation(calculateCurrentIndex())
-  }
-  
-  private func calculateCurrentIndex() -> Int {
-    var index = Int(floor(contentOffset.x * 3 / UIScreen.main.bounds.width))
-    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
-    return index
-  }
-  
-  private func zoomInZoomOutAnimation(_ item: Int) {
-    
-    var animations: (() -> Void)?
-    
-    if let cell = cellForItem(at: IndexPath(item: item, section: 0)) {
-      animations = {
-        self.visibleCells.filter { visibleCell in
-            visibleCell != cell
-          }.map {
-            $0.transform = .identity
-          }
-
-        cell.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
-      }
-    }
-
-    if let animations = animations {
-      UIView.animateKeyframes(withDuration: 0.1,
-                              delay: 0,
-                              options: .calculationModeCubic,
-                              animations: animations,
-                              completion: nil)
-    }
   }
 }
 
@@ -176,7 +173,7 @@ class CenterCellCollectionViewLayout: UICollectionViewFlowLayout {
     if velocity.x == 0 {
       return mostRecentOffset
     }
-
+    
     if let cv = self.collectionView {
       let cvBounds = cv.bounds
       let halfWidth = cvBounds.size.width * 0.5
@@ -184,20 +181,11 @@ class CenterCellCollectionViewLayout: UICollectionViewFlowLayout {
       if let attributesForVisibleCells = self.layoutAttributesForElements(in: cvBounds) {
         var candidateAttributes: UICollectionViewLayoutAttributes?
         for attributes in attributesForVisibleCells {
-          // == Skip comparison with non-cell items (headers and footers) == //
-          if attributes.representedElementCategory != UICollectionElementCategory.cell {
-            continue
+          if (velocity.x < 0 && attributes.center.x >= cv.contentOffset.x) ||
+            (velocity.x > 0 && attributes.center.x > cv.contentOffset.x + halfWidth) {
+            candidateAttributes = attributes
+            break
           }
-
-          if (attributes.center.x == 0) || (attributes.center.x > (cv.contentOffset.x + halfWidth) && velocity.x < 0) {
-            continue
-          }
-
-          candidateAttributes = attributes
-        }
-
-        if proposedContentOffset.x == -(cv.contentInset.left) {
-          return proposedContentOffset
         }
 
         guard let _ = candidateAttributes else {

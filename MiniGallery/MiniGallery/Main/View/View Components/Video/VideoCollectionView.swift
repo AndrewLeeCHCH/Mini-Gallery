@@ -8,23 +8,11 @@
 
 import UIKit
 
-protocol CollectionViewEventDelegate: class {
-  func didScrollTo(index: Int)
-  func didScrollPercentage(percent: CGFloat)
-}
-
-protocol CollectionView {
-  var eventDelegate: CollectionViewEventDelegate? { get set }
-  func updateData<T>(data: [T])
-  func prepareForOrientationChange()
-  func rescrollForOrientationChange()
-}
-
-final class VideoCollectionView: UICollectionView, CollectionView {
+final class VideoCollectionView: UICollectionView, MGCollectionView {
   
   // MARK: -Variables
   
-  weak var eventDelegate: CollectionViewEventDelegate?
+  weak var eventDelegate: MGCollectionViewDelegate?
   
   let cellId = "cellId"
   
@@ -38,7 +26,7 @@ final class VideoCollectionView: UICollectionView, CollectionView {
   
   private var indexPathBeforeChangingOrientation: IndexPath?
   
-  // MARK: -Initialization
+  // MARK: -Lifecycle
   
   required init() {
     
@@ -59,6 +47,8 @@ final class VideoCollectionView: UICollectionView, CollectionView {
   required public init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
+  
+  // MARK: -MGCollectionView functions
   
   func updateData<T>(data: [T]) {
     guard let posts = data as? [Post] else {
@@ -83,6 +73,14 @@ final class VideoCollectionView: UICollectionView, CollectionView {
       self.scrollToItem(at: indexPathBeforeChangingOrientation, at: .centeredHorizontally, animated: false)
     }
   }
+  
+  // MARK: -Helper
+  
+  private func calculateCurrentIndex() -> Int {
+    var index = Int(floor(contentOffset.x / UIScreen.main.bounds.width))
+    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
+    return index
+  }
 }
 
 extension VideoCollectionView: UICollectionViewDelegate, UICollectionViewDataSource {
@@ -103,6 +101,11 @@ extension VideoCollectionView: UICollectionViewDelegate, UICollectionViewDataSou
     }
   }
   
+  func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+    if let cell = cell as? VideoCell {
+      cell.stopPlaying()
+    }
+  }
 }
 
 extension VideoCollectionView: UICollectionViewDelegateFlowLayout {
@@ -122,10 +125,8 @@ extension VideoCollectionView: UICollectionViewDelegateFlowLayout {
     return 0
   }
   
-  func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-    if let cell = cell as? VideoCell {
-      cell.stopPlaying()
-    }
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+    return UIEdgeInsets.zero
   }
 }
 
@@ -144,13 +145,7 @@ extension VideoCollectionView: UIScrollViewDelegate {
         cell.startPlaying()
       }
     }
-    eventDelegate?.didScrollTo(index: calculateCurrentIndex())
-  }
-  
-  private func calculateCurrentIndex() -> Int {
-    var index = Int(floor(contentOffset.x / UIScreen.main.bounds.width))
-    index = index < 0 ? 0 : index >= posts.count ? posts.count - 1 : index
-    return index
+    eventDelegate?.collectionView(self, didScrollTo: calculateCurrentIndex())
   }
 }
 

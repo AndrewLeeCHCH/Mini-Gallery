@@ -12,9 +12,7 @@ final class MiniGalleryMainPresenter {
 
   weak var view: MiniGalleryMainView?
   var interactor: MiniGalleryMainUseCase!
-
-  // MARK: - Lifecycle
-
+  
 }
 
 extension MiniGalleryMainPresenter: MiniGalleryMainPresentation {
