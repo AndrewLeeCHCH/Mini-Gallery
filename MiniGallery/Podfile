@@ -5,9 +5,7 @@ target 'MiniGallery' do
 
   # Pods for MiniGallery
   
-#  pod 'Disk'
   pod 'MGUIPod', :git => "https://github.com/AndrewLeeCHCH/MiniGalleryUIPod.git", :tag => '0.0.4'
   pod 'MGNetworkPod', :git => "https://github.com/AndrewLeeCHCH/MiniGalleryNetworkPod.git", :tag => '0.0.2'
-#  pod 'MGNetworkPod',
 
 end
