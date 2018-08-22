@@ -1,0 +1,6 @@
+framework module MGNetworkPod {
+  umbrella header "MGNetworkPod-umbrella.h"
+
+  export *
+  module * { export * }
+}

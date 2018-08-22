@@ -6,6 +6,8 @@
 //  COPYRIGHT © 2018-PRESENT Jinyao Li ALL RIGHTS RESERVED.
 //
 
+import MGNetworkPod
+
 enum ExploreEvent {
   case none
   case postsDataFetched(posts: [Post])

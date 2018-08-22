@@ -7,9 +7,10 @@
 //
 
 import UIKit
+import MGUIPod
+import MGNetworkPod
 
 final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView {
-  
 
   // MARK: - Properties
 
@@ -19,8 +20,8 @@ final class MiniGalleryMainViewController: UIViewController, MiniGalleryMainView
     didSet {
       switch event {
       case .postsDataFetched(let posts):
-        videoCollectionView.updateData(data: posts)
-        imageCollectionView.updateData(data: posts)
+        videoCollectionView.updateData(data: posts.map { URL(string: $0.videoUrl)!})
+        imageCollectionView.updateData(data: posts.map { $0.imageUrl })
         break
       default:
         break

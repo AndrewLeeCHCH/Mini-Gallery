@@ -1,0 +1,28 @@
+{
+  "name": "MGNetworkPod",
+  "version": "0.0.2",
+  "summary": "This is NetworkPod for Project MiniGallery",
+  "description": "Create data-synchronization-related things for project MiniGallery.",
+  "homepage": "https://github.com/AndrewLeeCHCH/MiniGalleryNetworkPod",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE.md"
+  },
+  "authors": {
+    "AndrewLeeCHCH": "1650091775@qq.com"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "MGNetworkPod/**/*.{h,m,swift}",
+  "resources": "MGNetworkPod/**/*.{png,jpeg,jpg}",
+  "dependencies": {
+    "Disk": [
+
+    ]
+  },
+  "swift_version": "4.2"
+}

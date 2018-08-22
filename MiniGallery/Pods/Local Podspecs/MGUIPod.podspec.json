@@ -1,0 +1,23 @@
+{
+  "name": "MGUIPod",
+  "version": "0.0.4",
+  "summary": "This is UIPod for Project MiniGallery",
+  "description": "Create ui-related things for project MiniGallery.",
+  "homepage": "https://github.com/AndrewLeeCHCH/MiniGalleryUIPod",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE.md"
+  },
+  "authors": {
+    "AndrewLeeCHCH": "1650091775@qq.com"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source": {
+    "git": "https://github.com/AndrewLeeCHCH/MiniGalleryUIPod.git",
+    "tag": "0.0.4"
+  },
+  "source_files": "MGUIPod/**/*.{h,m,swift}",
+  "swift_version": "4.2"
+}

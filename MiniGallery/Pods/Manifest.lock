@@ -1,16 +1,38 @@
 PODS:
   - Disk (0.3.3)
+  - MGNetworkPod (0.0.2):
+    - Disk
+  - MGUIPod (0.0.4)
 
 DEPENDENCIES:
-  - Disk
+  - MGNetworkPod (from `https://github.com/AndrewLeeCHCH/MiniGalleryNetworkPod.git`, tag `0.0.2`)
+  - MGUIPod (from `https://github.com/AndrewLeeCHCH/MiniGalleryUIPod.git`, tag `0.0.4`)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
     - Disk
 
+EXTERNAL SOURCES:
+  MGNetworkPod:
+    :git: https://github.com/AndrewLeeCHCH/MiniGalleryNetworkPod.git
+    :tag: 0.0.2
+  MGUIPod:
+    :git: https://github.com/AndrewLeeCHCH/MiniGalleryUIPod.git
+    :tag: 0.0.4
+
+CHECKOUT OPTIONS:
+  MGNetworkPod:
+    :git: https://github.com/AndrewLeeCHCH/MiniGalleryNetworkPod.git
+    :tag: 0.0.2
+  MGUIPod:
+    :git: https://github.com/AndrewLeeCHCH/MiniGalleryUIPod.git
+    :tag: 0.0.4
+
 SPEC CHECKSUMS:
   Disk: d1f55cd61f6ca20f368232d0c6e37e3c3dfcb63e
+  MGNetworkPod: b7ba8b7d94e6013c54ace5f63a842e61b329100a
+  MGUIPod: 38cd0096b411436880eac9299db3f5858b795396
 
-PODFILE CHECKSUM: 1387807350c69647248ffc0b20b9b6618de4bceb
+PODFILE CHECKSUM: 4641a6b21374c5bb32044630870bfd027ab2015f
 
 COCOAPODS: 1.5.0
